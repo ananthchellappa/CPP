@@ -1,0 +1,58 @@
+// cprogramming.com Alex Allain
+#include <string>
+#include <vector>
+#include <iostream>
+
+class AddressBook
+{
+    public:
+    // using a template allows us to ignore the differences between functors, function pointers 
+    // and lambda
+    template<typename Func>
+    std::vector<std::string> findMatchingAddresses (Func func)
+    { 
+        std::vector<std::string> results;
+        for ( auto itr = _addresses.begin(), end = _addresses.end(); itr != end; ++itr )
+        {
+            // call the function passed into findMatchingAddresses and see if it matches
+            if ( func( *itr ) )
+            {
+                results.push_back( *itr );
+            }
+        }
+        return results;
+    }
+
+    AddressBook( std::vector<std::string> Addrs ) : _addresses( Addrs ) {};
+    AddressBook() { _addresses = {}; }
+
+    private:
+    std::vector<std::string> _addresses;
+};
+
+AddressBook global_addr_book(
+    {"william@thepalace.gov", "harry@theclub.org", "queen@thepalace.gov", "boris@theministry.gov"}
+);
+
+std::vector<std::string> findAddresses ( std::string to_find )
+{
+    return global_addr_book.findMatchingAddresses( 
+        // we're declaring a lambda here; the [] signals the start
+        [&] (const std::string& addr) { return addr.find( to_find ) != std::string::npos; } 
+    );
+}
+// [=] capture all variables within scope by value
+// [&] capture all variables within scope by reference
+// [&var] capture var by reference
+// [&, var] specify that the default way of capturing is by reference and we want to capture var
+// [=, &var] capture the variables in scope by value by default, but capture var using reference instead
+
+int main( int argc, char ** argv){
+    std::string dflt_srch = "gov";
+    if ( argc > 1 ) {
+        dflt_srch = argv[1];
+    }
+    for( auto match : findAddresses( dflt_srch) ) {
+        std::cout << match << std::endl;
+    }
+}
